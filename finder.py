@@ -115,12 +115,16 @@ def read_url(url):
             broken_links.append(url)
             is_ok = False
 
-            broken_file.write(url)
+            write_broken = url + "," + str(url_request.status_code) + "\n"
+            broken_file.write(write_broken)
             print("* Broken url: ", url)
             print("")
             return None
 
-        checked_file.write(url)
+        write_checked = url + "," \
+            + str(url_request.status_code) + "," + str(is_ok) + "\n"
+
+        checked_file.write(write_checked)
 
 def initialize():
     print("TODO: OUTPUT TO SQLite DB as well!")
