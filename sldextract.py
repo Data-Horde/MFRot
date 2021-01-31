@@ -23,7 +23,7 @@ def read_SQLite_DB(filename, index, table, LIMIT=-1):
     else:
         cursor = conn.execute("SELECT {} from {} LIMIT {}".format(index,table,LIMIT))
     tld_list = [x[0] for x in cursor]
-    #print(tld_list[0:10])
+    print(tld_list[1156:1160])
     conn.close()
 
     return len(tld_list)

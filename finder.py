@@ -42,9 +42,10 @@ def read_url(url):
     if url is not None:
         try:
             #enc_url = urllib.parse.quote(url)
-            enc_url = url.replace(" ","%20")
+            #enc_url = url.replace(" ","%20")
             #print(enc_url)
-            url_request = requests.get(enc_url)
+            #url_request = requests.get(enc_url)
+            url_request = requests.get(url,stream=True)
         except Exception:
             print("Could not read url...")
             return None
