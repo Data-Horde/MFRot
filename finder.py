@@ -5,6 +5,7 @@ import sys
 import normalizer as n
 
 import sqlite3 as sql
+from tqdm import tqdm 
 
 broken_links = []
 checked_links = []
@@ -110,18 +111,26 @@ if __name__ == '__main__':
     
     DBFile = sys.argv[1]
 
+    LIMIT = -1
+    if len(sys.argv) > 2:
+        LIMIT = sys.argv[2]
+
     print("Reading: ", DBFile)
     print("--------------------------------------------------")
-    s.read_SQLite_DB(DBFile,"url","urls")
+    N = s.read_SQLite_DB(DBFile,"url","urls",LIMIT)
 
     print("Starting...\n")
-    print("Checking ", DBFile)
+    #print("Checking ", DBFile)
+
+    for i in tqdm (range (N), desc="Checking URLs in {}...".format(DBFile)): 
+        pass
 
     """
     main_url_domain, main_url_ext = s.extract(main_url).values()
     read_url(main_url)
 
     summary()
+    """
+
     checked_file.close()
     broken_file.close()
-    """
