@@ -1,13 +1,25 @@
+import sqlite3 as sql
+
 tld_list = []
 tld_cache_list = []
 
 
+"""
 def read_tld_list():
     global tld_list
 
     with open("tld.txt", 'r') as f:
         tld_list = [line.rstrip(',\n') for line in f]
+"""
 
+def read_SQLite_DB(filename, index, table):
+    global tld_list
+
+    print("TODO: REMOVE DUPLICATE URLs")
+
+    conn = sql.connect(filename)
+    cursor = conn.execute("SELECT {} from {}".format(index,table))
+    tld_list = [x[0] for x in cursor]
 
 def extract(url):
 

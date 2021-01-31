@@ -4,6 +4,7 @@ import sldextract as s
 import sys
 import normalizer as n
 
+import sqlite3 as sql
 
 broken_links = []
 checked_links = []
@@ -89,6 +90,7 @@ def read_url(url):
 
 
 def initialize():
+    print("TODO: OUTPUT TO SQLite DB as well!")
     global checked_file, broken_file, headers_checked_file, headers_broken_file
 
     checked_file = open("checked_urls.csv", "w")
@@ -103,9 +105,11 @@ def initialize():
 
 
 if __name__ == '__main__':
-
+    
     initialize()
-    s.read_tld_list()
+    
+    s.read_SQLite_DB("MFlist.db","url","urls")
+    """
     main_url = sys.argv[1]
 
     print("Received url: ", main_url)
@@ -119,3 +123,4 @@ if __name__ == '__main__':
     summary()
     checked_file.close()
     broken_file.close()
+    """
