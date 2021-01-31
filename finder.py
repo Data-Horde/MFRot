@@ -7,6 +7,7 @@ import normalizer as n
 import sqlite3 as sql
 from tqdm import tqdm
 import time
+import urllib.parse
 
 
 broken_links = []
@@ -33,62 +34,6 @@ def summary():
           / len(checked_links) * 100))
     print("--------------------------------------------------")
 
-
-def read_url_legacy(url):
-
-    checked_links.append(url)
-
-    url = n.normalize(url, main_url_domain, main_url_ext)
-
-    # check normalizer.py mailto: condition
-    print("Fetching page at {}...".format(url), end='')
-    if url is not None:
-        try:
-            url_request = requests.get(url)
-        except Exception:
-            print("Could not read url...")
-            return None
-        print("...done")
-
-        if url != main_url:
-            print("Checking: ", url)
-            url_domain = s.extract(url)["url_domain"]
-        else:
-            url_domain = main_url_domain
-
-        is_ok = True
-
-        if url_request.status_code >= 400:
-
-            broken_links.append(url)
-            is_ok = False
-
-            write_broken = url + "," + str(url_request.status_code) + "\n"
-            broken_file.write(write_broken)
-            print("* Broken url: ", url)
-            print("")
-            return None
-
-        soup = BeautifulSoup(url_request.content, "html.parser", from_encoding="iso-8859-1")
-
-        print("Looking for links on the webpage...", end='')
-        url_list = soup.find_all('a', href=True)
-        print("...done")
-        print("")
-
-        write_checked = url + "," \
-            + str(url_request.status_code) + "," + str(is_ok) + "\n"
-
-        checked_file.write(write_checked)
-
-        if url_domain == main_url_domain:
-            for link in url_list:
-                if not link['href']:
-                    continue
-
-                if link['href'] not in checked_links:
-                    read_url(link['href'])
-
 def read_url(url):
 
     checked_links.append(url)
@@ -96,7 +41,10 @@ def read_url(url):
     # check normalizer.py mailto: condition
     if url is not None:
         try:
-            url_request = requests.get(url)
+            #enc_url = urllib.parse.quote(url)
+            enc_url = url.replace(" ","%20")
+            #print(enc_url)
+            url_request = requests.get(enc_url)
         except Exception:
             print("Could not read url...")
             return None
@@ -168,3 +116,63 @@ if __name__ == '__main__':
 
     checked_file.close()
     broken_file.close()
+
+
+#### UNUSED BEGIN
+
+def read_url_legacy(url):
+
+    checked_links.append(url)
+
+    url = n.normalize(url, main_url_domain, main_url_ext)
+
+    # check normalizer.py mailto: condition
+    print("Fetching page at {}...".format(url), end='')
+    if url is not None:
+        try:
+            url_request = requests.get(url)
+        except Exception:
+            print("Could not read url...")
+            return None
+        print("...done")
+
+        if url != main_url:
+            print("Checking: ", url)
+            url_domain = s.extract(url)["url_domain"]
+        else:
+            url_domain = main_url_domain
+
+        is_ok = True
+
+        if url_request.status_code >= 400:
+
+            broken_links.append(url)
+            is_ok = False
+
+            write_broken = url + "," + str(url_request.status_code) + "\n"
+            broken_file.write(write_broken)
+            print("* Broken url: ", url)
+            print("")
+            return None
+
+        soup = BeautifulSoup(url_request.content, "html.parser", from_encoding="iso-8859-1")
+
+        print("Looking for links on the webpage...", end='')
+        url_list = soup.find_all('a', href=True)
+        print("...done")
+        print("")
+
+        write_checked = url + "," \
+            + str(url_request.status_code) + "," + str(is_ok) + "\n"
+
+        checked_file.write(write_checked)
+
+        if url_domain == main_url_domain:
+            for link in url_list:
+                if not link['href']:
+                    continue
+
+                if link['href'] not in checked_links:
+                    read_url(link['href'])
+
+#### UNUSED END
