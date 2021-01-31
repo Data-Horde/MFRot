@@ -5,7 +5,9 @@ import sys
 import normalizer as n
 
 import sqlite3 as sql
-from tqdm import tqdm 
+from tqdm import tqdm
+import time
+
 
 broken_links = []
 checked_links = []
@@ -22,11 +24,9 @@ main_url = ""
 
 def summary():
     print()
+    print("Ended at {}\n".format(int(time.time()*1000.0)))
     print("Summary")
     print("--------------------------------------------------")
-    print("URL: \t\t", main_url)
-    print("URL Domain: \t", main_url_domain)
-    print("URL Extension: \t", main_url_ext)
     print("Links Checked: \t", len(checked_links))
     print("Broken Links: \t", len(broken_links))
     print("Link Rot: \t{0:.2f}%".format(0 if not len(checked_links) else len(broken_links)
@@ -157,19 +157,14 @@ if __name__ == '__main__':
     print("--------------------------------------------------")
     N = s.read_SQLite_DB(DBFile,"url","urls",LIMIT)
 
-    print("Starting...\n")
+    print("Started at {}\n".format(int(time.time()*1000.0)))
 
     for i in tqdm (range (N), desc="Checking URLs in {}".format(DBFile)):
         targetURL = s.getList()[i]
         #print(targetURL)
         read_url(targetURL)
 
-    """
-    main_url_domain, main_url_ext = s.extract(main_url).values()
-    read_url(main_url)
-
     summary()
-    """
 
     checked_file.close()
     broken_file.close()
