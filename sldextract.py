@@ -20,6 +20,7 @@ def read_SQLite_DB(filename, index, table):
     conn = sql.connect(filename)
     cursor = conn.execute("SELECT {} from {}".format(index,table))
     tld_list = [x[0] for x in cursor]
+    conn.close()
 
 def extract(url):
 

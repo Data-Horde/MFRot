@@ -108,15 +108,16 @@ if __name__ == '__main__':
     
     initialize()
     
-    s.read_SQLite_DB("MFlist.db","url","urls")
-    """
-    main_url = sys.argv[1]
+    DBFile = sys.argv[1]
 
-    print("Received url: ", main_url)
+    print("Reading: ", DBFile)
     print("--------------------------------------------------")
-    print("Starting...\n")
-    print("Checking ", main_url)
+    s.read_SQLite_DB(DBFile,"url","urls")
 
+    print("Starting...\n")
+    print("Checking ", DBFile)
+
+    """
     main_url_domain, main_url_ext = s.extract(main_url).values()
     read_url(main_url)
 
