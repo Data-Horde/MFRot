@@ -27,6 +27,9 @@ def read_SQLite_DB(filename, index, table, LIMIT=-1):
 
     return len(tld_list)
 
+def getList():
+    return tld_list
+
 def extract(url):
 
     url = url.replace("https://", "")

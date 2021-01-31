@@ -34,7 +34,7 @@ def summary():
     print("--------------------------------------------------")
 
 
-def read_url(url):
+def read_url_legacy(url):
 
     checked_links.append(url)
 
@@ -89,6 +89,38 @@ def read_url(url):
                 if link['href'] not in checked_links:
                     read_url(link['href'])
 
+def read_url(url):
+
+    checked_links.append(url)
+
+    # check normalizer.py mailto: condition
+    if url is not None:
+        try:
+            url_request = requests.get(url)
+        except Exception:
+            print("Could not read url...")
+            return None
+        #print("...done")
+
+        #if url != main_url:
+            #print("Checking: ", url)
+        #    url_domain = s.extract(url)["url_domain"]
+        #else:
+        #    url_domain = main_url_domain
+
+        is_ok = True
+
+        if url_request.status_code >= 400:
+
+            broken_links.append(url)
+            is_ok = False
+
+            broken_file.write(url)
+            print("* Broken url: ", url)
+            print("")
+            return None
+
+        checked_file.write(url)
 
 def initialize():
     print("TODO: OUTPUT TO SQLite DB as well!")
@@ -109,8 +141,10 @@ if __name__ == '__main__':
     
     initialize()
     
+    #Database File
     DBFile = sys.argv[1]
 
+    #LIMIT URLs to check, recommended for debugging
     LIMIT = -1
     if len(sys.argv) > 2:
         LIMIT = sys.argv[2]
@@ -120,10 +154,11 @@ if __name__ == '__main__':
     N = s.read_SQLite_DB(DBFile,"url","urls",LIMIT)
 
     print("Starting...\n")
-    #print("Checking ", DBFile)
 
-    for i in tqdm (range (N), desc="Checking URLs in {}...".format(DBFile)): 
-        pass
+    for i in tqdm (range (N), desc="Checking URLs in {}".format(DBFile)):
+        targetURL = s.getList()[i]
+        #print(targetURL)
+        read_url(targetURL)
 
     """
     main_url_domain, main_url_ext = s.extract(main_url).values()
