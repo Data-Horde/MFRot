@@ -1,0 +1,17 @@
+TODO: OUTPUT TO SQLite DB as well!
+Reading:  MFlist.db
+--------------------------------------------------
+TODO: REMOVE DUPLICATE URLs
+['http://www.mediafire.com/file/4c12wav8e8omovo/parkour_frenzy.zip', 'http://www.mediafire.com/file/4c58e9kgff6jee3/', 'http://www.mediafire.com/file/4c7pn5stbn45lox', 'http://www.mediafire.com/file/4d9stl7mdb8btwm']
+Started at 1612126565860
+
+Checking URLs in MFlist.db: 100%|█████████████████████████████████████████████████████████████████████████████████████| 4069/4069 [50:32<00:00,  1.34it/s]
+
+Ended at 1612129598244
+
+Summary
+--------------------------------------------------
+Links Checked: 	 4069
+Broken Links: 	 2635
+Link Rot: 	64.76%
+--------------------------------------------------
