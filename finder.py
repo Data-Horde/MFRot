@@ -65,8 +65,8 @@ def read_url_legacy(url):
 
             write_broken = url + "," + str(url_request.status_code) + "\n"
             broken_file.write(write_broken)
-            print("* Broken url: ", url)
-            print("")
+            #print("* Broken url: ", url)
+            #print("")
             return None
 
         soup = BeautifulSoup(url_request.content, "html.parser", from_encoding="iso-8859-1")
