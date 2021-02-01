@@ -7,7 +7,7 @@ MFRot checks for and reports broken MediaFire URLs.
 Usage:
 
 ```bash
-python finder.py [SQLite URL database].db 
+$python finder.py [SQLite URL database].db 
 # or to add a limit
-python finder.py [SQLite URL database].db 100
+$python finder.py [SQLite URL database].db 100
 ```
