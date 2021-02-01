@@ -12,18 +12,24 @@ def read_tld_list():
         tld_list = [line.rstrip(',\n') for line in f]
 """
 
-def read_SQLite_DB(filename, index, table, LIMIT=-1):
+def read_SQLite_DB(filename, index, table, LIMIT=-1, timestamp="timeSubmitted"):
     global tld_list
-
-    print("TODO: REMOVE DUPLICATE URLs")
 
     conn = sql.connect(filename)
     if LIMIT == -1:
         cursor = conn.execute("SELECT {} from {}".format(index,table))
+        cursor2 = conn.execute("SELECT {} from {}".format(timestamp,table))
     else:
         cursor = conn.execute("SELECT {} from {} LIMIT {}".format(index,table,LIMIT))
+        cursor2 = conn.execute("SELECT {} from {} LIMIT {}".format(timestamp,table,LIMIT))
+
     tld_list = [x[0] for x in cursor]
     #print(tld_list[1156:1160])
+    T = [x[0] for x in cursor2]
+    print("Last submission was at: {}".format(T[len(T)-1]))
+
+    #print("TODO: PRINT TIMESUBMITTED OF LATEST ENTRY IN DB, ASSUME ORDERING BY TIME!")
+    print("TODO: REMOVE DUPLICATE URLs!")
     conn.close()
 
     return len(tld_list)
