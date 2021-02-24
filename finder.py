@@ -78,9 +78,12 @@ def read_url(url):
 
 def initialize():
 
-    print("TODO: Read Broken URLs from last run")
+    print("TODO: Skip Broken URLs from last run")
+    print("TODO: Read Working URLs from last run")
+    print("TODO: Replace `is_ok` with `last_seen` UNIX timestamp")
 
     print("TODO (LATER): OUTPUT TO SQLite DB as well!")
+
     global checked_file, broken_file, headers_checked_file, headers_broken_file
 
     checked_file = open("checked_urls.csv", "w")
@@ -90,7 +93,7 @@ def initialize():
     checked_file.write(headers_checked_file)
 
     try:
-        broken_file = open("broken_urls.csv", "rw")
+        broken_file = open("broken_urls.csv", "a+")
     except:
         #if broken_file does not exist
         broken_file = open("broken_urls.csv", "w")
@@ -99,8 +102,6 @@ def initialize():
         broken_file.write(headers_broken_file)
 
 if __name__ == '__main__':
-    
-    initialize()
     
     #Database File
     #DBFile = sys.argv[1]
@@ -112,15 +113,25 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description="Check for dead links on MediaFire.")
     parser.add_argument("dbfile",type=str,help="Path to database file downloaded from https://urls.ajay.app/.")
-    parser.add_argument("-l","--limit",type=int,help="Limit of max links to check, meant for debugging.")
+    parser.add_argument("-b","--brokenurls",type=int,help="Path to csv of checked urls.")
+    parser.add_argument("-c","--checkedurls",type=int,help="Path to csv of broken urls")
+    parser.add_argument("-L","--limit",type=int,help="Limit of max links to check, meant for debugging.")
     #parser.add_argument("-br","--brokenURLs",type=int,help="TBA")
-    parser.add_argument("-le","--lastexecution",type=float,help="UNIX Timestamp of Last Execution.\nThis is used for labeling when a broken link was last seen.")
+    parser.add_argument("-l","--lastexecution",type=float,help="UNIX Timestamp of Last Execution.\nThis is used for labeling when a broken link was last seen.")
     args = parser.parse_args()
-    print(args)
+    #print(args)
 
     #SET LIMIT, DBFILE and LAST SEEN
-    print("TODO: SET LIMIT, DBFILE and LAST SEEN")
-    quit()
+    #print("TODO: SET LIMIT, DBFILE and LAST SEEN")
+
+    DBFile, LIMIT, LASTSEEN = args.dbfile, (args.limit or -1), (str(args.lastexecution) or "n/a")
+
+    print("TODO: READ -b and -c argument")
+    #print(DBFile, LIMIT, LASTSEEN)
+
+    initialize()
+
+    #quit()
 
     print("Reading: ", DBFile)
     print("--------------------------------------------------")
@@ -176,7 +187,7 @@ def read_url_legacy(url):
             #write_broken = url + "," + str(url_request.status_code) + "\n"
 
             #EDIT THIS TO LAST TIMESTAMP
-            write_broken = url + "," + str(url_request.status_code) + "," + "WHEN LAST SEEN" + "\n"
+            write_broken = url + "," + str(url_request.status_code) + "," + LASTSEEN + "\n"
 
             broken_file.write(write_broken)
             print("* Broken url: ", url)
