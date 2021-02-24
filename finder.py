@@ -9,6 +9,7 @@ from tqdm import tqdm
 import time
 import urllib.parse
 
+import argparse
 
 broken_links = []
 checked_links = []
@@ -76,31 +77,50 @@ def read_url(url):
         checked_file.write(write_checked)
 
 def initialize():
-    print("TODO: OUTPUT TO SQLite DB as well!")
+
+    print("TODO: Read Broken URLs from last run")
+
+    print("TODO (LATER): OUTPUT TO SQLite DB as well!")
     global checked_file, broken_file, headers_checked_file, headers_broken_file
 
     checked_file = open("checked_urls.csv", "w")
-    broken_file = open("broken_urls.csv", "w")
-
     headers_checked_file = "url" + "," + "status_code" + "," \
         + "is_ok" + "\n"
-    headers_broken_file = "url" + "," + "status_code" + "\n"
-
+    
     checked_file.write(headers_checked_file)
-    broken_file.write(headers_broken_file)
 
+    try:
+        broken_file = open("broken_urls.csv", "rw")
+    except:
+        #if broken_file does not exist
+        broken_file = open("broken_urls.csv", "w")
+        #headers_broken_file = "url" + "," + "status_code" + "\n"
+        headers_broken_file = "url" + "," + "status_code" + "," + "last_seen" + "\n"
+        broken_file.write(headers_broken_file)
 
 if __name__ == '__main__':
     
     initialize()
     
     #Database File
-    DBFile = sys.argv[1]
+    #DBFile = sys.argv[1]
 
     #LIMIT URLs to check, recommended for debugging
-    LIMIT = -1
-    if len(sys.argv) > 2:
-        LIMIT = sys.argv[2]
+    #LIMIT = -1
+    #if len(sys.argv) > 2:
+    #    LIMIT = sys.argv[2]
+
+    parser = argparse.ArgumentParser(description="Check for dead links on MediaFire.")
+    parser.add_argument("dbfile",type=str,help="Path to database file downloaded from https://urls.ajay.app/.")
+    parser.add_argument("-l","--limit",type=int,help="Limit of max links to check, meant for debugging.")
+    #parser.add_argument("-br","--brokenURLs",type=int,help="TBA")
+    parser.add_argument("-le","--lastexecution",type=float,help="UNIX Timestamp of Last Execution.\nThis is used for labeling when a broken link was last seen.")
+    args = parser.parse_args()
+    print(args)
+
+    #SET LIMIT, DBFILE and LAST SEEN
+    print("TODO: SET LIMIT, DBFILE and LAST SEEN")
+    quit()
 
     print("Reading: ", DBFile)
     print("--------------------------------------------------")
@@ -108,9 +128,12 @@ if __name__ == '__main__':
 
     print("Started at {}\n".format(int(time.time()*1000.0)))
 
+    print("TODO: CHECK IF targetURL was not broken before!") 
+
     for i in tqdm (range (N), desc="Checking URLs in {}".format(DBFile)):
         targetURL = s.getList()[i]
         #print(targetURL)
+
         read_url(targetURL)
 
     summary()
@@ -150,7 +173,11 @@ def read_url_legacy(url):
             broken_links.append(url)
             is_ok = False
 
-            write_broken = url + "," + str(url_request.status_code) + "\n"
+            #write_broken = url + "," + str(url_request.status_code) + "\n"
+
+            #EDIT THIS TO LAST TIMESTAMP
+            write_broken = url + "," + str(url_request.status_code) + "," + "WHEN LAST SEEN" + "\n"
+
             broken_file.write(write_broken)
             print("* Broken url: ", url)
             print("")
