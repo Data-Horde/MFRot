@@ -12,9 +12,6 @@ import urllib.parse
 import argparse
 import pandas as pd
 
-print("TODO: Replace List with Set for faster retrieval")
-#broken_links = []
-#checked_links = []
 broken_links = set()
 checked_links = set()
 blank_links = []
@@ -43,9 +40,7 @@ def summary():
 
 def read_url(url):
 
-    #print("TODO: Switch to pandas!")
-
-    global brokenURLs, checkedURLs
+    global brokenURLs, checkedURLs, broken_links, checked_links
 
     #checked_links.append(url)
     checked_links.add(url)
@@ -91,7 +86,7 @@ def read_url(url):
         checkedURLs = checkedURLs.append({'url': url, 'status_code': url_request.status_code, 'last_seen': int(time.time()*1000)},ignore_index=True)
 
 def initialize():
-    print("TODO: Skip Broken URLs from last run")
+    global broken_links
     print("TODO: Read Working URLs from last run")
     print("TODO: Replace `is_ok` with `last_seen` UNIX timestamp")
 
@@ -117,12 +112,14 @@ def initialize():
     global checkedURLs, brokenURLs
 
     try:
-        checkedURLs = pd.read_csv(CHURL_PATH,ignore_index=True)
+        checkedURLs = pd.read_csv(CHURL_PATH,index_col=0)
     except:
         checkedURLs = pd.DataFrame({'url': [], 'status_code': [], 'last_seen': []})
 
     try:
-        brokenURLs = pd.read_csv(BURL_PATH,ignore_index=True)
+        brokenURLs = pd.read_csv(BURL_PATH,index_col=0)
+        broken_links = set(brokenURLs['url'].to_list())
+        print(broken_links)
     except:
         brokenURLs = pd.DataFrame({'url': [], 'status_code': [], 'last_seen': []})
 
@@ -147,13 +144,9 @@ if __name__ == '__main__':
     #print(args)
 
     #SET LIMIT, DBFILE and LAST SEEN
-    #print("TODO: SET LIMIT, DBFILE and LAST SEEN")
 
     DBFile, LIMIT, LASTSEEN = args.dbfile, (args.limit or -1), (str(args.lastexecution) or "n/a")
 
-    #LASTSEEN 1612126565
-
-    #print("TODO: READ -b and -c argument")
     BURL_PATH, CHURL_PATH = (args.brokenurls or "broken_urls.csv"), (args.checkedurls or "checked_urls.csv")
     #print(BURL_PATH, CHURL_PATH)
 
@@ -167,12 +160,16 @@ if __name__ == '__main__':
 
     print("Started at {}\n".format(int(time.time()*1000.0)))
 
-    print("TODO: CHECK IF targetURL was not broken before!") 
+    #LASTSEEN 1612126565 
 
     for i in tqdm (range (N), desc="Checking URLs in {}".format(DBFile)):
         targetURL = s.getList()[i]
-        #print(targetURL)
 
+        #print(targetURL,broken_links)
+        if targetURL in broken_links:
+            #print("Link is already broken skipping!")
+            continue
+            #print(targetURL)
         read_url(targetURL)
 
     summary()
