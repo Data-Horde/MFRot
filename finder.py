@@ -13,8 +13,10 @@ import argparse
 import pandas as pd
 
 print("TODO: Replace List with Set for faster retrieval")
-broken_links = []
-checked_links = []
+#broken_links = []
+#checked_links = []
+broken_links = set()
+checked_links = set()
 blank_links = []
 
 #checked_file = None
@@ -45,7 +47,8 @@ def read_url(url):
 
     global brokenURLs, checkedURLs
 
-    checked_links.append(url)
+    #checked_links.append(url)
+    checked_links.add(url)
 
     # check normalizer.py mailto: condition
     if url is not None:
@@ -70,7 +73,8 @@ def read_url(url):
 
         if url_request.status_code >= 400:
 
-            broken_links.append(url)
+            #broken_links.append(url)
+            broken_links.add(url)
             is_ok = False
 
             #write_broken = url + "," + str(url_request.status_code) + "\n"
