@@ -86,17 +86,17 @@ def initialize():
 
     global checked_file, broken_file, headers_checked_file, headers_broken_file
 
-    checked_file = open("checked_urls.csv", "w")
+    checked_file = open(CHURL_PATH, "w")
     headers_checked_file = "url" + "," + "status_code" + "," \
         + "is_ok" + "\n"
     
     checked_file.write(headers_checked_file)
 
     try:
-        broken_file = open("broken_urls.csv", "a+")
+        broken_file = open(BURL_PATH, "a+")
     except:
         #if broken_file does not exist
-        broken_file = open("broken_urls.csv", "w")
+        broken_file = open(BURL_PATH, "w")
         #headers_broken_file = "url" + "," + "status_code" + "\n"
         headers_broken_file = "url" + "," + "status_code" + "," + "last_seen" + "\n"
         broken_file.write(headers_broken_file)
@@ -113,8 +113,8 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description="Check for dead links on MediaFire.")
     parser.add_argument("dbfile",type=str,help="Path to database file downloaded from https://urls.ajay.app/.")
-    parser.add_argument("-b","--brokenurls",type=int,help="Path to csv of checked urls.")
-    parser.add_argument("-c","--checkedurls",type=int,help="Path to csv of broken urls")
+    parser.add_argument("-b","--brokenurls",type=str,help="Path to csv of broken urls.")
+    parser.add_argument("-c","--checkedurls",type=str,help="Path to csv of checked urls.")
     parser.add_argument("-L","--limit",type=int,help="Limit of max links to check, meant for debugging.")
     #parser.add_argument("-br","--brokenURLs",type=int,help="TBA")
     parser.add_argument("-l","--lastexecution",type=float,help="UNIX Timestamp of Last Execution.\nThis is used for labeling when a broken link was last seen.")
@@ -126,8 +126,11 @@ if __name__ == '__main__':
 
     DBFile, LIMIT, LASTSEEN = args.dbfile, (args.limit or -1), (str(args.lastexecution) or "n/a")
 
-    print("TODO: READ -b and -c argument")
-    #print(DBFile, LIMIT, LASTSEEN)
+    #LASTSEEN 1612126565
+
+    #print("TODO: READ -b and -c argument")
+    BURL_PATH, CHURL_PATH = (args.brokenurls or "broken_urls.csv"), (args.checkedurls or "checked_urls.csv")
+    #print(BURL_PATH, CHURL_PATH)
 
     initialize()
 
