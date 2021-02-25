@@ -10,13 +10,17 @@ import time
 import urllib.parse
 
 import argparse
+import pandas as pd
 
+print("TODO: Replace List with Set for faster retrieval")
 broken_links = []
 checked_links = []
 blank_links = []
 
-checked_file = None
-broken_file = None
+#checked_file = None
+#broken_file = None
+checkedURLs = None
+brokenURLs = None
 
 headers_checked_file = ""
 headers_broken_file = ""
@@ -36,6 +40,10 @@ def summary():
     print("--------------------------------------------------")
 
 def read_url(url):
+
+    #print("TODO: Switch to pandas!")
+
+    global brokenURLs, checkedURLs
 
     checked_links.append(url)
 
@@ -65,41 +73,54 @@ def read_url(url):
             broken_links.append(url)
             is_ok = False
 
-            write_broken = url + "," + str(url_request.status_code) + "\n"
-            broken_file.write(write_broken)
+            #write_broken = url + "," + str(url_request.status_code) + "\n"
+            #broken_file.write(write_broken)
+            brokenURLs = brokenURLs.append({'url': url, 'status_code': url_request.status_code, 'last_seen': LASTSEEN},ignore_index=True)
             #print("* Broken url: ", url)
             #print("")
             return None
 
-        write_checked = url + "," \
-            + str(url_request.status_code) + "," + str(is_ok) + "\n"
+        #write_checked = url + "," \
+        #    + str(url_request.status_code) + "," + str(is_ok) + "\n"
 
-        checked_file.write(write_checked)
+        #checked_file.write(write_checked)
+        checkedURLs = checkedURLs.append({'url': url, 'status_code': url_request.status_code, 'last_seen': int(time.time()*1000)},ignore_index=True)
 
 def initialize():
-
     print("TODO: Skip Broken URLs from last run")
     print("TODO: Read Working URLs from last run")
     print("TODO: Replace `is_ok` with `last_seen` UNIX timestamp")
 
     print("TODO (LATER): OUTPUT TO SQLite DB as well!")
 
-    global checked_file, broken_file, headers_checked_file, headers_broken_file
+    #global checked_file, broken_file, headers_checked_file, headers_broken_file
 
-    checked_file = open(CHURL_PATH, "w")
-    headers_checked_file = "url" + "," + "status_code" + "," \
-        + "is_ok" + "\n"
+    #checked_file = open(CHURL_PATH, "w")
+    #headers_checked_file = "url" + "," + "status_code" + "," \
+    #    + "is_ok" + "\n"
     
-    checked_file.write(headers_checked_file)
+    #checked_file.write(headers_checked_file)
+
+    #try:
+    #    broken_file = open(BURL_PATH, "a+")
+    #except:
+    #    #if broken_file does not exist
+    #    broken_file = open(BURL_PATH, "w")
+    #    #headers_broken_file = "url" + "," + "status_code" + "\n"
+    #    headers_broken_file = "url" + "," + "status_code" + "," + "last_seen" + "\n"
+    #    broken_file.write(headers_broken_file)
+
+    global checkedURLs, brokenURLs
 
     try:
-        broken_file = open(BURL_PATH, "a+")
+        checkedURLs = pd.read_csv(CHURL_PATH,ignore_index=True)
     except:
-        #if broken_file does not exist
-        broken_file = open(BURL_PATH, "w")
-        #headers_broken_file = "url" + "," + "status_code" + "\n"
-        headers_broken_file = "url" + "," + "status_code" + "," + "last_seen" + "\n"
-        broken_file.write(headers_broken_file)
+        checkedURLs = pd.DataFrame({'url': [], 'status_code': [], 'last_seen': []})
+
+    try:
+        brokenURLs = pd.read_csv(BURL_PATH,ignore_index=True)
+    except:
+        brokenURLs = pd.DataFrame({'url': [], 'status_code': [], 'last_seen': []})
 
 if __name__ == '__main__':
     
@@ -152,69 +173,12 @@ if __name__ == '__main__':
 
     summary()
 
-    checked_file.close()
-    broken_file.close()
+    #checkedURLs.reset_index(drop=False)
+    #brokenURLs.reset_index(drop=False)
 
+    print(checkedURLs)
 
-#### UNUSED BEGIN
-
-def read_url_legacy(url):
-
-    checked_links.append(url)
-
-    url = n.normalize(url, main_url_domain, main_url_ext)
-
-    # check normalizer.py mailto: condition
-    print("Fetching page at {}...".format(url), end='')
-    if url is not None:
-        try:
-            url_request = requests.get(url)
-        except Exception:
-            print("Could not read url...")
-            return None
-        print("...done")
-
-        if url != main_url:
-            print("Checking: ", url)
-            url_domain = s.extract(url)["url_domain"]
-        else:
-            url_domain = main_url_domain
-
-        is_ok = True
-
-        if url_request.status_code >= 400:
-
-            broken_links.append(url)
-            is_ok = False
-
-            #write_broken = url + "," + str(url_request.status_code) + "\n"
-
-            #EDIT THIS TO LAST TIMESTAMP
-            write_broken = url + "," + str(url_request.status_code) + "," + LASTSEEN + "\n"
-
-            broken_file.write(write_broken)
-            print("* Broken url: ", url)
-            print("")
-            return None
-
-        soup = BeautifulSoup(url_request.content, "html.parser", from_encoding="iso-8859-1")
-
-        print("Looking for links on the webpage...", end='')
-        url_list = soup.find_all('a', href=True)
-        print("...done")
-        print("")
-
-        write_checked = url + "," \
-            + str(url_request.status_code) + "," + str(is_ok) + "\n"
-
-        checked_file.write(write_checked)
-
-        if url_domain == main_url_domain:
-            for link in url_list:
-                if not link['href']:
-                    continue
-
-                if link['href'] not in checked_links:
-                    read_url(link['href'])
-
-#### UNUSED END
+    checkedURLs.to_csv(CHURL_PATH)
+    brokenURLs.to_csv(BURL_PATH)
+    #checked_file.close()
+    #broken_file.close()
