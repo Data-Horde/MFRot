@@ -14,6 +14,8 @@ import pandas as pd
 
 broken_links = set()
 checked_links = set()
+old_working_links = set()
+old_broken_links = set()
 
 #checked_file = None
 #broken_file = None
@@ -25,7 +27,6 @@ headers_broken_file = ""
 
 main_url = ""
 
-
 def summary():
     print()
     print("Ended at {}\n".format(int(time.time()*1000.0)))
@@ -33,6 +34,7 @@ def summary():
     print("--------------------------------------------------")
     print("Links Checked: \t", len(checked_links))
     print("Broken Links: \t", len(broken_links))
+    print("Newly Broken Links: \t", len(old_broken_links))
     print("Link Rot: \t{0:.2f}%".format(0 if not len(checked_links) else len(broken_links)
           / len(checked_links) * 100))
     print("--------------------------------------------------")
@@ -41,13 +43,18 @@ def read_url(url):
 
     global brokenURLs, checkedURLs, broken_links, checked_links
 
-    print("TODO: Replace `last_seen` with `is_new` UNIX timestamp")
+    #print("TODO: Replace `last_seen` with `is_new` UNIX timestamp")
 
     #checked_links.append(url)
     checked_links.add(url)
 
+    if targetURL in broken_links:
+        #print("Link is already broken skipping!")
+        return
+
     # check normalizer.py mailto: condition
     if url is not None:
+
         try:
             #enc_url = urllib.parse.quote(url)
             #enc_url = url.replace(" ","%20")
@@ -75,7 +82,16 @@ def read_url(url):
 
             #write_broken = url + "," + str(url_request.status_code) + "\n"
             #broken_file.write(write_broken)
-            brokenURLs = brokenURLs.append({'url': url, 'status_code': url_request.status_code, 'gone_by': BYGONE},ignore_index=True)
+            brokenURLs = brokenURLs.append({'url': url, 'status_code': url_request.status_code, 'gone_by': int(time.time()*1000.0)},ignore_index=True)
+
+            if url in old_working_links:
+                #remove!
+                #print("I SHOULD REMOVE")
+                #print(url)
+                #print(checkedURLs[checkedURLs['url']==url])
+                old_working_links.discard(url)
+                old_broken_links.add(url)
+
             #print("* Broken url: ", url)
             #print("")
             return None
@@ -87,8 +103,6 @@ def read_url(url):
         checkedURLs = checkedURLs.append({'url': url, 'status_code': url_request.status_code, 'last_seen': int(time.time()*1000)},ignore_index=True)
 
 def initialize():
-
-    print("TODO: Read Working URLs from last run")
 
     print("TODO (LATER): OUTPUT TO SQLite DB as well!")
 
@@ -109,14 +123,15 @@ def initialize():
     #    headers_broken_file = "url" + "," + "status_code" + "," + "last_seen" + "\n"
     #    broken_file.write(headers_broken_file)
 
-    global checkedURLs, brokenURLs, checked_links, broken_links
+    global checkedURLs, brokenURLs, checked_links, broken_links, old_working_links
 
     try:
-        #ADD PREVIOUSLY CHECKED
-        checkedURLs = pd.read_csv(CHURL_PATH,index_col=0)
-        checked_links = set(checkedURLs['url'].to_list())
+        pd.read_csv(CHURL_PATH,index_col=0)
+        checkedURLs = pd.DataFrame({'url': [], 'status_code': [], 'last_seen': []})
+        old_working_links = set(checkedURLs['url'].to_list())
     except:
         checkedURLs = pd.DataFrame({'url': [], 'status_code': [], 'last_seen': []})
+        old_working_links = set()
 
     try:
         brokenURLs = pd.read_csv(BURL_PATH,index_col=0)
@@ -138,7 +153,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Check for dead links on MediaFire.")
     parser.add_argument("dbfile",type=str,help="Path to database file downloaded from https://urls.ajay.app/.")
     parser.add_argument("-b","--brokenurls",type=str,help="Path to csv of broken urls.")
-    parser.add_argument("-c","--checkedurls",type=str,help="Path to csv of checked urls.")
+    parser.add_argument("-c","--checkedurls",type=str,help="Path to csv of previously checked urls.")
     parser.add_argument("-L","--limit",type=int,help="Limit of max links to check, meant for debugging.")
     #parser.add_argument("-br","--brokenURLs",type=int,help="TBA")
     parser.add_argument("-l","--lastexecution",type=float,help="UNIX Timestamp of Last Execution.\nThis is used for labeling when a broken link was last seen.")
@@ -159,21 +174,15 @@ if __name__ == '__main__':
     print("--------------------------------------------------")
     N = s.read_SQLite_DB(DBFile,"url","urls",LIMIT)
 
+
     print("Started at {}\n".format(int(time.time()*1000.0)))
 
-    #BYGONE 1612126565 
+    #BYGONE 1612126565
 
     for i in tqdm (range (N), desc="Checking URLs in {}".format(DBFile)):
         targetURL = s.getList()[i]
 
         #print(targetURL,broken_links)
-        if targetURL in broken_links:
-            #print("Link is already broken skipping!")
-            continue
-        elif targetURL in checked_links:
-            #update entry in checkedURLs?
-            #need to distinguish between "new" links and previously recorded ones
-            continue
         read_url(targetURL)
 
     summary()
