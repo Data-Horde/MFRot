@@ -14,7 +14,6 @@ import pandas as pd
 
 broken_links = set()
 checked_links = set()
-blank_links = []
 
 #checked_file = None
 #broken_file = None
@@ -41,6 +40,9 @@ def summary():
 def read_url(url):
 
     global brokenURLs, checkedURLs, broken_links, checked_links
+
+    #print("TODO: Replace `is_ok` with `last_seen` UNIX timestamp")
+    print("TODO: Replace `last_seen` with `gone_by` UNIX timestamp")
 
     #checked_links.append(url)
     checked_links.add(url)
@@ -74,7 +76,7 @@ def read_url(url):
 
             #write_broken = url + "," + str(url_request.status_code) + "\n"
             #broken_file.write(write_broken)
-            brokenURLs = brokenURLs.append({'url': url, 'status_code': url_request.status_code, 'last_seen': LASTSEEN},ignore_index=True)
+            brokenURLs = brokenURLs.append({'url': url, 'status_code': url_request.status_code, 'gone_by': BYGONE},ignore_index=True)
             #print("* Broken url: ", url)
             #print("")
             return None
@@ -86,9 +88,8 @@ def read_url(url):
         checkedURLs = checkedURLs.append({'url': url, 'status_code': url_request.status_code, 'last_seen': int(time.time()*1000)},ignore_index=True)
 
 def initialize():
-    global broken_links
+
     print("TODO: Read Working URLs from last run")
-    print("TODO: Replace `is_ok` with `last_seen` UNIX timestamp")
 
     print("TODO (LATER): OUTPUT TO SQLite DB as well!")
 
@@ -109,17 +110,19 @@ def initialize():
     #    headers_broken_file = "url" + "," + "status_code" + "," + "last_seen" + "\n"
     #    broken_file.write(headers_broken_file)
 
-    global checkedURLs, brokenURLs
+    global checkedURLs, brokenURLs, checked_links, broken_links
 
     try:
+        ADD PREVIOUSLY CHECKED
         checkedURLs = pd.read_csv(CHURL_PATH,index_col=0)
+        checked_links = set(checkedURLs['url'].to_list())
     except:
         checkedURLs = pd.DataFrame({'url': [], 'status_code': [], 'last_seen': []})
 
     try:
         brokenURLs = pd.read_csv(BURL_PATH,index_col=0)
         broken_links = set(brokenURLs['url'].to_list())
-        print(broken_links)
+        #print(broken_links)
     except:
         brokenURLs = pd.DataFrame({'url': [], 'status_code': [], 'last_seen': []})
 
@@ -144,8 +147,7 @@ if __name__ == '__main__':
     #print(args)
 
     #SET LIMIT, DBFILE and LAST SEEN
-
-    DBFile, LIMIT, LASTSEEN = args.dbfile, (args.limit or -1), (str(args.lastexecution) or "n/a")
+    DBFile, LIMIT, BYGONE = args.dbfile, (args.limit or -1), (str(args.lastexecution) or "n/a")
 
     BURL_PATH, CHURL_PATH = (args.brokenurls or "broken_urls.csv"), (args.checkedurls or "checked_urls.csv")
     #print(BURL_PATH, CHURL_PATH)
@@ -160,7 +162,7 @@ if __name__ == '__main__':
 
     print("Started at {}\n".format(int(time.time()*1000.0)))
 
-    #LASTSEEN 1612126565 
+    #BYGONE 1612126565 
 
     for i in tqdm (range (N), desc="Checking URLs in {}".format(DBFile)):
         targetURL = s.getList()[i]
@@ -169,7 +171,10 @@ if __name__ == '__main__':
         if targetURL in broken_links:
             #print("Link is already broken skipping!")
             continue
-            #print(targetURL)
+        elif targetURL in checked_links:
+            #update entry in checkedURLs?
+            #need to distinguish between "new" links and previously recorded ones
+            continue
         read_url(targetURL)
 
     summary()
