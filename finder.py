@@ -41,8 +41,7 @@ def read_url(url):
 
     global brokenURLs, checkedURLs, broken_links, checked_links
 
-    #print("TODO: Replace `is_ok` with `last_seen` UNIX timestamp")
-    print("TODO: Replace `last_seen` with `gone_by` UNIX timestamp")
+    print("TODO: Replace `last_seen` with `is_new` UNIX timestamp")
 
     #checked_links.append(url)
     checked_links.add(url)
@@ -113,7 +112,7 @@ def initialize():
     global checkedURLs, brokenURLs, checked_links, broken_links
 
     try:
-        ADD PREVIOUSLY CHECKED
+        #ADD PREVIOUSLY CHECKED
         checkedURLs = pd.read_csv(CHURL_PATH,index_col=0)
         checked_links = set(checkedURLs['url'].to_list())
     except:
@@ -124,7 +123,7 @@ def initialize():
         broken_links = set(brokenURLs['url'].to_list())
         #print(broken_links)
     except:
-        brokenURLs = pd.DataFrame({'url': [], 'status_code': [], 'last_seen': []})
+        brokenURLs = pd.DataFrame({'url': [], 'status_code': [], 'gone_by': []})
 
 if __name__ == '__main__':
     
